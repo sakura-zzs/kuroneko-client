@@ -11,7 +11,8 @@ module.exports = {
   plugins: ['prettier'],
   rules: {
     'prettier/prettier': 'error',
-    'no-undef': 'off'
+    'no-undef': 'off',
+    'vue/multi-word-component-names': 'off'
   },
   parserOptions: {
     ecmaVersion: 'latest'

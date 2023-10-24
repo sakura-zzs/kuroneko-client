@@ -1,85 +1,57 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import Navbar from '@/components/navbar/Navbar.vue'
+import Login from '@/views/Login/Login.vue'
+import { ref } from 'vue'
+const isLogin = ref(false)
+const showLoginCard = (flag) => {
+  isLogin.value = flag
+}
+const hideLoginCard = (flag) => {
+  isLogin.value = flag
+}
 </script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+  <div class="app">
+    <el-container class="app_container">
+      <div class="nav_container">
+        <el-header class="app_nav">
+          <navbar :isLogin="isLogin" @changeIsLogin="showLoginCard" />
+        </el-header>
+      </div>
+      <el-main class="main-container">
+        <router-view />
+      </el-main>
+    </el-container>
+    <div class="login-container" v-if="isLogin">
+      <login @hideLoginCard="hideLoginCard" />
     </div>
-  </header>
-
-  <RouterView />
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
+<style lang="less" scoped>
+.nav_container {
+  position: fixed;
+  z-index: 999;
   width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
 }
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
+.app_nav {
+  display: flex;
+  justify-content: center;
+  background-color: #1f2233;
 }
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+.main-container {
+  display: flex;
+  justify-content: center;
+  padding: 62px 0;
 }
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.login-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+  background-color: rgba(0, 0, 0, 0.7);
 }
 </style>
+@/stores/useHome
