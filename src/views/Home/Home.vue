@@ -1,12 +1,17 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import ActicleCard from './cpns/ActicleCard.vue'
+const router = useRouter()
 const bannerRef = ref([
   '/src/assets/image/kuroneko.png',
   '/src/assets/image/kuroneko.png',
   '/src/assets/image/kuroneko.png'
 ])
 const value = ref(new Date())
+const publish = () => {
+  router.push({ path: '/publish' })
+}
 </script>
 
 <template>
@@ -32,6 +37,7 @@ const value = ref(new Date())
         <div class="date-table">
           <el-calendar v-model="value" />
         </div>
+        <button @click="publish">发布</button>
       </el-aside>
     </el-container>
   </div>

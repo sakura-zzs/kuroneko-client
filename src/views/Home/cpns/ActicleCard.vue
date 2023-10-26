@@ -1,5 +1,6 @@
 <script setup>
 import { useHomeStore } from '@/stores/useHome'
+import getContentText from '@/utils/getContentText'
 import { storeToRefs } from 'pinia'
 
 const homeStore = useHomeStore()
@@ -15,12 +16,12 @@ const { momentList } = storeToRefs(homeStore)
           <div class="acticle-card__userinfo">
             <div class="user-card">
               <a href="" class="user-avatar">
-                <img src="@/assets/image/seaside-kuroneko.jpg" alt="" />
+                <img :src="item.avatar.url" alt="" />
               </a>
-              <a href="" class="user-nickname">五更琉璃</a>
+              <a href="" class="user-nickname">{{ item.profile?.nickName }}</a>
             </div>
           </div>
-          <p class="acticle-card-time">21:01</p>
+          <p class="acticle-card-time">{{ item.createTime }}</p>
         </div>
         <a class="acticle-card-main">
           <h3 class="acticle-title">{{ item.title }}</h3>
@@ -29,7 +30,7 @@ const { momentList } = storeToRefs(homeStore)
               <img src="@/assets/image/seaside-kuroneko.jpg" />
             </div>
             <div class="acticle-content">
-              {{ item.content }}
+              {{ getContentText(item.content) }}
             </div>
           </div>
         </a>
@@ -72,6 +73,7 @@ const { momentList } = storeToRefs(homeStore)
     display: flex;
     justify-content: center;
     flex-direction: column;
+    cursor: pointer;
     .acticle-title {
       height: 20px;
       margin-top: 8px;
@@ -103,6 +105,9 @@ const { momentList } = storeToRefs(homeStore)
         font-size: 14px;
       }
     }
+  }
+  .acticle-card-main:hover .acticle-title {
+    color: #00c3ff;
   }
 }
 </style>

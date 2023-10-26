@@ -15,5 +15,21 @@ const kuronekoRequest = new KuronekoRequest({
     }
   }
 })
+const uploadRequest = new KuronekoRequest({
+  baseURL: BASE_URL,
+  timeout: TIME_OUT,
+  interceptors: {
+    requestInterceptor: (config) => {
+      // 携带token，config.headers.AUTHORIZATION Bearer token
+      const token = localCache.getItem('token')
+      config.headers = {
+        'Content-Type': 'multipart/form-data',
+        AUTHORIZATION: `Bearer ${token}`
+      }
 
+      return config
+    }
+  }
+})
 export default kuronekoRequest
+export { uploadRequest }
