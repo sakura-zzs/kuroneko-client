@@ -9,6 +9,7 @@ const bannerRef = ref([
   '/src/assets/image/kuroneko.png'
 ])
 const value = ref(new Date())
+//todo:验证登录状态
 const publish = () => {
   router.push({ path: '/publish' })
 }

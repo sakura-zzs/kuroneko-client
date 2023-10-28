@@ -9,6 +9,14 @@ const routes = [
   {
     path: '/publish',
     component: () => import('@/views/Publish/Publish.vue')
+  },
+  {
+    path: '/article/:id',
+    component: () => import('@/views/Article/Article.vue')
+  },
+  {
+    path: '/:pathMatch(.*)',
+    component: () => import('@/views/NotFound/NotFound.vue')
   }
 ]
 const router = createRouter({

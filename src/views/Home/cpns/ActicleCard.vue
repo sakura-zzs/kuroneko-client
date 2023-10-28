@@ -23,7 +23,7 @@ const { momentList } = storeToRefs(homeStore)
           </div>
           <p class="acticle-card-time">{{ item.createTime }}</p>
         </div>
-        <a class="acticle-card-main">
+        <a :href="'/article/' + item.id" class="acticle-card-main">
           <h3 class="acticle-title">{{ item.title }}</h3>
           <div class="acticle--card__content">
             <div class="acticle-preview">

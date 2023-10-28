@@ -8,7 +8,13 @@ export const useHomeStore = defineStore('home', {
       momentList: []
     }
   },
-  getters: {},
+  getters: {
+    getMomentById(state) {
+      return (id) => {
+        return state.momentList.find((i) => i.id == id)
+      }
+    }
+  },
   actions: {
     async getMomentList() {
       const { data } = await kuronekoRequest.get({ url: '/moment' })
