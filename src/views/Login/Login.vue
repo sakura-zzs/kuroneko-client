@@ -57,6 +57,7 @@ const submitForm = async (formEl) => {
       center: true,
       type: 'success'
     })
+    document.body.style.overflow = ''
     userStore.loginStatus = true
     userStore.getUserProfile().then(() => {
       const profile = toRaw(userStore.userProfile)
@@ -74,6 +75,8 @@ const resetForm = (formEl) => {
 //关闭按钮
 const emit = defineEmits(['hideLoginCard'])
 const closeLoginCard = () => {
+  //显示滚动条
+  document.body.style.overflow = ''
   emit('hideLoginCard', false)
 }
 </script>

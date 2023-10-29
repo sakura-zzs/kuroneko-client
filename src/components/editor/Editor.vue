@@ -7,6 +7,8 @@ import { localCache } from '@/utils/cache'
 import { uploadRequest } from '@/service'
 import kuronekoRequest from '@/service/index'
 import { useRouter } from 'vue-router'
+import { useArticleStore } from '@/stores/useArticle'
+import { useUserStore } from '@/stores/useUser'
 const router = useRouter()
 const token = localCache.getItem('token')
 // 编辑器实例，必须用 shallowRef
@@ -20,13 +22,16 @@ let publishImageList = []
 //要删除的图片列表（差异）
 let deleteImageList = []
 // 内容 HTML
-const valueHtml = ref('<p>hello</p>')
-
-// 模拟 ajax 异步获取内容
-onMounted(() => {
-  setTimeout(() => {
-    valueHtml.value = '<p>模拟 Ajax 异步设置内容</p>'
-  }, 1500)
+const valueHtml = ref()
+//title
+const acticleTitle = ref()
+//获取标签列表
+let labelNameList = []
+const acticleStore = useArticleStore()
+const userStore = useUserStore()
+onMounted(async () => {
+  await acticleStore.getLabelList()
+  labelNameList = acticleStore.getLabelNameList
 })
 /**
  * 菜单key获取方法
@@ -118,10 +123,8 @@ editorConfig.MENU_CONF['uploadImage'] = {
         momentImg: file
       }
     })
-    console.log(data)
     //将图片id保存在alt中
     const { url, id } = data.imgLinks[0]
-    console.log(url)
     insertFn(url, id, url)
   }
 }
@@ -146,6 +149,14 @@ const handleCreated = (editor) => {
   editorRef.value = editor // 记录 editor 实例，重要！
 }
 
+const maxTextCount = ref(10000)
+editorConfig.maxLength = maxTextCount.value
+
+//监听编辑器内容变化，对内容字数进行统计
+const handleMaxLength = () => {
+  ElMessage('字数已达上限！')
+}
+
 const publishing = async () => {
   //编辑完成，点击发布按钮获取编辑器中插入的所有图片
   publishImageList = editorRef.value.getElemsByType('image')
@@ -160,9 +171,26 @@ const publishing = async () => {
   }
   //获取编辑器json格式数据保存到数据库（将动态数据保存）
   //todo:验证数据有效性
+
   const content = editorRef.value.children
-  const title = '测试标题'
-  const { data } = await kuronekoRequest.post({ url: '/moment', data: { title, content } })
+  const text = editorRef.value.getText()
+  if (!acticleTitle.value?.trim().length) {
+    return ElMessage('请填写标题！')
+  }
+  if (text.trim().length < 20) {
+    return ElMessage('内容字数不能少于20！')
+  }
+  if (!selectTagRef.value?.length) {
+    return ElMessage('请至少选择一个标签！')
+  }
+  if (!userStore.loginStatus) {
+    return ElMessage('请先登录！')
+  }
+  //创建动态
+  const { data } = await kuronekoRequest.post({
+    url: '/moment',
+    data: { title: acticleTitle.value, content }
+  })
   //获取动态id
   const momentId = data.insertId
   //将插入的图片与动态进行绑定
@@ -172,6 +200,10 @@ const publishing = async () => {
       await kuronekoRequest.patch({ url: '/upload/moment', data: { momentId }, params: { id } })
     })
   }
+  //将动态与tag绑定
+  selectTagRef.value.forEach(async (labelName) => {
+    await kuronekoRequest.post({ url: `/moment/${momentId}/label`, data: { labelName } })
+  })
   //重置
   insertedImageList = []
   ElMessage({
@@ -182,31 +214,147 @@ const publishing = async () => {
   })
   router.push('/home')
 }
+//远程搜索选择tag
+const selectTagRef = ref()
+//控制是否显示加载
+const loading = ref(false)
+const options = ref([])
+const remoteMethod = (query) => {
+  if (selectTagRef.value.length == 6) {
+    ElMessage('最多只能添加6个标签！')
+  }
+  query = query.trim()
+  if (query) {
+    options.value = labelNameList.filter((i) => i.toLowerCase().includes(query.toLowerCase()))
+  } else {
+    options.value = []
+  }
+}
 </script>
 
 <template>
-  <el-card>
-    <div class="wang-editor" style="border: 1px solid #ccc">
-      <Toolbar
-        style="border-bottom: 1px solid #ccc"
-        :editor="editorRef"
-        :defaultConfig="toolbarConfig"
-        :mode="mode"
-      />
-      <Editor
-        style="height: 500px; overflow-y: hidden"
-        v-model="valueHtml"
-        :defaultConfig="editorConfig"
-        :mode="mode"
-        @onCreated="handleCreated"
-      />
+  <div class="publish-container">
+    <div class="publish-header">
+      <h1>发布帖子</h1>
     </div>
-    <el-button type="primary" @click="publishing">发布</el-button>
-  </el-card>
+    <div class="publish-main">
+      <div class="article-title">
+        <div class="title-label label"><span>标题:</span></div>
+        <el-input
+          v-model="acticleTitle"
+          maxlength="30"
+          placeholder="标题(必填)"
+          show-word-limit
+          type="text"
+        />
+      </div>
+      <div class="editor-container">
+        <div class="editor-label label"><span>内容:</span></div>
+        <el-card>
+          <div class="wang-editor">
+            <Toolbar
+              style="border-bottom: 1px solid #ebebeb"
+              :editor="editorRef"
+              :defaultConfig="toolbarConfig"
+              :mode="mode"
+            />
+            <Editor
+              v-model="valueHtml"
+              :defaultConfig="editorConfig"
+              :mode="mode"
+              @onCreated="handleCreated"
+              @onMaxLength="handleMaxLength"
+            />
+          </div>
+        </el-card>
+      </div>
+      <div class="tags">
+        <div class="label"><span>选择标签:</span></div>
+        <el-select
+          v-model="selectTagRef"
+          multiple
+          filterable
+          remote
+          reserve-keyword
+          placeholder="搜索标签:选择文章标签以获得更高浏览量！"
+          :remote-method="remoteMethod"
+          :loading="loading"
+        >
+          <el-option v-for="item in options" :key="item" :label="item" :value="item" />
+        </el-select>
+      </div>
+    </div>
+    <div class="publish-footer">
+      <el-button type="primary" @click="publishing">发布</el-button>
+    </div>
+  </div>
 </template>
 
 <style lang="less" scoped>
-.wang-editor {
-  width: 740px;
+.publish-container {
+  width: 1000px;
+  margin: 30px 0 62px;
+  padding-bottom: 70px;
+  background-color: #fff;
+  :deep(.el-card__body) {
+    padding: 0;
+  }
+  .publish-header {
+    height: 50px;
+    line-height: 50px;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 0 30px;
+    h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+  .publish-main {
+    padding: 50px 80px 40px;
+  }
+  .article-title {
+    display: flex;
+    .el-input {
+      width: 740px;
+    }
+  }
+  .editor-container {
+    display: flex;
+    margin-top: 40px;
+    .el-card.is-always-shadow {
+      box-shadow: none;
+    }
+    .el-card {
+      border: 1px solid #ebebeb;
+    }
+  }
+  .tags {
+    display: flex;
+    margin-top: 40px;
+    align-items: center;
+    .el-select {
+      width: 500px;
+    }
+  }
+  .publish-footer {
+    display: flex;
+    justify-content: center;
+    .el-button {
+      width: 190px;
+      height: 42px;
+      background-color: #00c3ff;
+    }
+  }
+  .wang-editor {
+    position: relative;
+    width: 740px;
+    min-height: 380px;
+  }
+}
+.label {
+  width: 100px;
+  font-size: 14px;
+  line-height: 50px;
 }
 </style>

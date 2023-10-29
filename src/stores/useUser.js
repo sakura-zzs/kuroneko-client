@@ -18,5 +18,6 @@ export const useUserStore = defineStore('user', {
       this.userProfile = data[0]
     }
   },
+  //持久化
   persist: true
 })

@@ -17,6 +17,8 @@ const login = () => {
   if (!loginStatus.value) {
     emit('changeIsLogin', true)
   }
+  //隐藏滚动条
+  document.body.style.overflow = 'hidden'
 }
 
 const input1 = ref()

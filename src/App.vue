@@ -45,7 +45,7 @@ const hideLoginCard = (flag) => {
   padding: 62px 0;
 }
 .login-container {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
