@@ -15,10 +15,13 @@ const { momentList } = storeToRefs(homeStore)
         <div class="acticle-card-header">
           <div class="acticle-card__userinfo">
             <div class="user-card">
-              <a href="" class="user-avatar">
-                <img :src="item.avatar.url" alt="" />
+              <a :href="'/user/' + item.userId" class="user-avatar">
+                <img v-if="item.avatar.url" :src="item.avatar.url" />
+                <img v-else src="@/assets/image/user_default.png" />
               </a>
-              <a href="" class="user-nickname">{{ item.profile?.nickName }}</a>
+              <a :href="'/user/' + item.userId" class="user-nickname">{{
+                item.profile?.nickName ? item.profile?.nickName : '匿名用户'
+              }}</a>
             </div>
           </div>
           <p class="acticle-card-time">{{ item.createTime }}</p>
@@ -26,8 +29,8 @@ const { momentList } = storeToRefs(homeStore)
         <a :href="'/article/' + item.id" class="acticle-card-main">
           <h3 class="acticle-title">{{ item.title }}</h3>
           <div class="acticle--card__content">
-            <div class="acticle-preview">
-              <img src="@/assets/image/seaside-kuroneko.jpg" />
+            <div v-if="item.momentImg[0].url" class="acticle-preview">
+              <img :src="item.momentImg[0].url" />
             </div>
             <div class="acticle-content">
               {{ getContentText(item.content) }}

@@ -2,15 +2,19 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ActicleCard from './cpns/ActicleCard.vue'
+import { useUserStore } from '@/stores/useUser'
 const router = useRouter()
+const userStore = useUserStore()
 const bannerRef = ref([
   '/src/assets/image/kuroneko.png',
   '/src/assets/image/kuroneko.png',
   '/src/assets/image/kuroneko.png'
 ])
-const value = ref(new Date())
-//todo:验证登录状态
+//日历数据
+// const value = ref(new Date())
+
 const publish = () => {
+  if (!userStore.loginStatus) return ElMessage('请在登录后进行操作！')
   router.push({ path: '/publish' })
 }
 </script>
@@ -35,10 +39,15 @@ const publish = () => {
         </el-card>
       </el-main>
       <el-aside>
-        <div class="date-table">
+        <!-- <div class="date-table">
           <el-calendar v-model="value" />
+        </div> -->
+        <div class="publish-btn">
+          <el-button type="primary" @click="publish"
+            ><el-icon><i-ep-editPen /></el-icon><span>发布</span
+            ><el-icon><i-ep-arrowRight /></el-icon
+          ></el-button>
         </div>
-        <button @click="publish">发布</button>
       </el-aside>
     </el-container>
   </div>
@@ -63,11 +72,39 @@ const publish = () => {
     }
   }
   .el-aside {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-left: 20px;
     .date-table {
       .el-calendar {
         height: 227px;
         border-radius: 5px;
+      }
+    }
+    .publish-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 234px;
+      background-color: #fff;
+      border-radius: 6px;
+      .el-button {
+        width: 160px;
+        height: 40px;
+        color: #663c00;
+        background-color: #ffe14c;
+        border: none;
+        border-radius: 6px;
+      }
+      .el-icon {
+        font-size: 20px;
+      }
+      span {
+        margin: 0 20px 0 10px;
+        font-size: 16px;
+        font-weight: 600;
       }
     }
   }
