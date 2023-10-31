@@ -152,7 +152,7 @@ const handleCreated = (editor) => {
 const maxTextCount = ref(10000)
 editorConfig.maxLength = maxTextCount.value
 
-//监听编辑器内容变化，对内容字数进行统计
+//字数达上限触发
 const handleMaxLength = () => {
   ElMessage('字数已达上限！')
 }
@@ -170,7 +170,7 @@ const publishing = async () => {
     })
   }
   //获取编辑器json格式数据保存到数据库（将动态数据保存）
-  //todo:验证数据有效性
+  //验证数据有效性
 
   const content = editorRef.value.children
   const text = editorRef.value.getText()

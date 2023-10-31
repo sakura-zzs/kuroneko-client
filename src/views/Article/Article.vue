@@ -1,12 +1,15 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { useHomeStore } from '@/stores/useHome'
-import '@wangeditor/editor/dist/css/style.css' // 引入 css
 
 import { ref, onMounted } from 'vue'
 import { createEditor } from '@wangeditor/editor'
+
+import Reply from '@/components/comment/Reply.vue'
+
 const route = useRoute()
 const homeStore = useHomeStore()
+//动态详情展示
 const { id } = route.params
 const editorRef = ref()
 let momentData = ref()
@@ -67,7 +70,7 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-        <div class="acticle-reply">todo发表评论</div>
+        <div class="acticle-reply"><reply :is-upload-img="true" /></div>
         <div class="acticle-reply-list">todo评论列表</div>
       </el-main>
       <el-aside> aside </el-aside>

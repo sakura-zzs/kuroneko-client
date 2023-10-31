@@ -42,6 +42,7 @@ declare module 'vue' {
     IEpStar: typeof import('~icons/ep/star')['default']
     IEpView: typeof import('~icons/ep/view')['default']
     Navbar: typeof import('./src/components/navbar/Navbar.vue')['default']
+    Reply: typeof import('./src/components/comment/Reply.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
