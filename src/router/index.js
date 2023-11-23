@@ -15,6 +15,10 @@ const routes = [
     component: () => import('@/views/Article/Article.vue')
   },
   {
+    path: '/map',
+    component: () => import('@/views/Map/Map.vue')
+  },
+  {
     path: '/:pathMatch(.*)',
     component: () => import('@/views/NotFound/NotFound.vue')
   }

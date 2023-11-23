@@ -31,5 +31,9 @@ const uploadRequest = new KuronekoRequest({
     }
   }
 })
+const gpsRequest = new KuronekoRequest({
+  baseURL: '/mqtt',
+  timeout: TIME_OUT
+})
 export default kuronekoRequest
-export { uploadRequest }
+export { uploadRequest, gpsRequest }

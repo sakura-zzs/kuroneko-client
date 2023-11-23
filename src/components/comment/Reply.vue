@@ -12,9 +12,9 @@ const mode = ref('simple')
 //编辑器中插入过的所有图片
 let insertedImageList = []
 //最终要发布的图片列表
-let publishImageList = []
+// let publishImageList = []
 //要删除的图片列表（差异）
-let deleteImageList = []
+// let deleteImageList = []
 //工具栏配置
 const toolbarConfig = {
   //自定义工具栏菜单

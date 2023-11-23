@@ -51,6 +51,11 @@ export default defineConfig({
         target: 'http://localhost:8001', //目标域名
         changeOrigin: true, //需要代理跨域
         rewrite: (path) => path.replace(/^\/api/, '') //路径重写，把'/api'替换为''
+      },
+      '/mqtt': {
+        target: 'http://localhost:8883', //目标域名
+        changeOrigin: true, //需要代理跨域
+        rewrite: (path) => path.replace(/^\/mqtt/, '') //路径重写，把'/api'替换为''
       }
     }
   }
