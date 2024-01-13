@@ -6,16 +6,19 @@ import { ref, onMounted } from 'vue'
 import { createEditor } from '@wangeditor/editor'
 
 import Reply from '@/components/comment/Reply.vue'
+import ReplyList from '@/components/comment/ReplyList.vue'
 
 const route = useRoute()
 const homeStore = useHomeStore()
 //动态详情展示
 const { id } = route.params
 const editorRef = ref()
-let momentData = ref()
+const momentData = ref()
+const userId = ref()
 onMounted(async () => {
   await homeStore.getMomentList()
   momentData.value = homeStore.getMomentById(id)
+  userId.value = momentData.value.userId
   const editor = createEditor({ content: JSON.parse(momentData.value.content) })
   editorRef.value.innerHTML = editor.getHtml()
 })
@@ -70,8 +73,12 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-        <div class="acticle-reply"><reply :is-upload-img="true" /></div>
-        <div class="acticle-reply-list">todo评论列表</div>
+        <div class="acticle-reply">
+          <reply :momentId="id" :is-upload-img="false" />
+        </div>
+        <div class="acticle-reply-list">
+          <reply-list :autherId="userId" :momentId="id" />
+        </div>
       </el-main>
       <el-aside> aside </el-aside>
     </el-container>

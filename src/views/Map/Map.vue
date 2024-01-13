@@ -7,7 +7,10 @@
     ak="4X3Z3qITk1islBa19lBPMqfkMryPVBXu"
     v="3.0"
     type="API"
-    :center="{ lng: 115.782, lat: 28.6596 }"
+    :center="{
+      lng: pointInfo[pointInfo.length - 1]?.bdLng,
+      lat: pointInfo[pointInfo.length - 1]?.bdLat
+    }"
     :zoom="15"
     :min-zoom="1"
     :max-zoom="100"
@@ -47,27 +50,6 @@
         autoViewport：检索结束后是否自动调整地图视野
       -->
       <!-- <bm-walking :start="start" :end="end" :panel="false" :autoViewport="true"></bm-walking> -->
-      <!-- 标点、信息窗口，同一时间只能打开一个信息窗口 -->
-      <!-- 起始点 -->
-      <!-- <bm-marker
-        :icon="{ url: startImg, size: { width: 36, height: 59 } }"
-        :position="{ lng: 115.793, lat: 28.6626 }"
-        @click="infoWindowOpen"
-      >
-        <bm-info-window :show="show" @close="infoWindowClose" @open="infoWindowOpen"
-          >江西工贸</bm-info-window
-        >
-      </bm-marker>
-       终点
-      <bm-marker
-        :icon="{ url: endImg, size: { width: 30, height: 60 } }"
-        :position="{ lng: 115.869, lat: 28.6881 }"
-        @click="infoWindowOpen1"
-      >
-        <bm-info-window :show="itemList.show1" @close="infoWindowClose1" @open="infoWindowOpen1"
-          >秋水广场</bm-info-window
-        >
-      </bm-marker> -->
       <bm-marker
         v-for="p in pointInfo"
         :key="p?.id"
@@ -153,8 +135,13 @@ const handlePaint = async ({ BMap }) => {
   //地图加载完成后，有关地图操作都需要在ready中进行
   //ready事件处理函数有俩个参数 BMap,接口核心类，map，地图实例
   //获取未转换百度坐标的列表
-  const { data } = await gpsRequest.get({ url: 'gps/down/updateList' })
+  let { data } = await gpsRequest.get({ url: 'gps/down/updateList' })
   if (data.length) {
+    //经度dddmm.mmmmm 纬度ddmm.mmmmm 转换为度分
+    data.forEach((i) => {
+      i.lng = Math.floor(i.lng / 100) + (i.lng % 100) / 60
+      i.lat = Math.floor(i.lat / 100) + (i.lat % 100) / 60
+    })
     let updateInfo = []
     data.forEach((v) => {
       updateInfo.push({ id: v.id })
@@ -224,14 +211,14 @@ const handlePaint = async ({ BMap }) => {
     })
   }
   const res = await gpsRequest.get({ url: '/gps/down' })
-  console.log(res.data)
+  // console.log(res.data)
   const pointList = res.data.map((i) => {
     return { lng: i.bdLng, lat: i.bdLat }
   })
 
   pointInfo.value = res.data
   points.value = pointList
-  console.log(points.value)
+  // console.log(points.value)
 }
 //控制轨迹显示
 const powerShow = ref(true)

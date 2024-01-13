@@ -20,5 +20,6 @@ export const useHomeStore = defineStore('home', {
       const { data } = await kuronekoRequest.get({ url: '/moment' })
       this.momentList = data
     }
-  }
+  },
+  persist: true
 })

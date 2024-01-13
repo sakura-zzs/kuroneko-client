@@ -4,6 +4,11 @@ import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import { localCache } from '@/utils/cache'
 import { uploadRequest } from '@/service'
 import { ref, shallowRef, onBeforeUnmount } from 'vue'
+import { useUserStore } from '@/stores/useUser'
+import { useCommentStore } from '@/stores/useComment'
+import kuronekoRequest from '@/service'
+const userStore = useUserStore()
+const commentStore = useCommentStore()
 const token = localCache.getItem('token')
 // 编辑器实例，必须用 shallowRef
 const editorRef = shallowRef()
@@ -11,19 +16,27 @@ const editorRef = shallowRef()
 const mode = ref('simple')
 //编辑器中插入过的所有图片
 let insertedImageList = []
-//最终要发布的图片列表
-// let publishImageList = []
-//要删除的图片列表（差异）
-// let deleteImageList = []
+// 最终要发布的图片列表
+let publishImageList = []
+// 要删除的图片列表（差异）
+let deleteImageList = []
 //工具栏配置
 const toolbarConfig = {
   //自定义工具栏菜单
   toolbarKeys: ['emotion']
 }
-const { isUploadImg } = defineProps({
+const props = defineProps({
   isUploadImg: {
     type: Boolean,
     default: false
+  },
+  momentId: {
+    type: String,
+    default: ''
+  },
+  maxLength: {
+    type: Number,
+    default: 1000
   }
 })
 //编辑器配置
@@ -31,7 +44,7 @@ const editorConfig = { MENU_CONF: [], placeholder: '请开始你的炸弹秀...'
 const handleCreated = (editor) => {
   editorRef.value = editor // 记录 editor 实例
 }
-if (isUploadImg) {
+if (props.isUploadImg) {
   toolbarConfig.toolbarKeys.push({
     key: 'group-image', // 必填，要以 group 开头
     title: '', // 必填
@@ -74,6 +87,7 @@ if (isUploadImg) {
       console.log(data)
       //将图片id保存在alt中
       const { url, id } = data.imgLinks[0]
+      //获取上传每张图片返回来的id，在这里处理没有进行发布时，什么条件下将未发布的图片进行删除
       insertFn(url, id, url)
     }
   }
@@ -91,6 +105,64 @@ onBeforeUnmount(() => {
   if (editor == null) return
   editor.destroy()
 })
+
+const maxTextCount = ref(props.maxLength)
+editorConfig.maxLength = maxTextCount.value
+
+//字数达上限触发
+const handleMaxLength = () => {
+  ElMessage('字数已达上限！')
+}
+const publishing = async () => {
+  //评论编辑完成，点击发布按钮获取编辑器中插入的所有图片
+  publishImageList = editorRef.value.getElemsByType('image')
+  //将要删除的图片筛选出来
+  deleteImageList = insertedImageList.filter((i) => !publishImageList.some((p) => i.alt == p.alt))
+  //删除服务器中要删除的图片
+  if (deleteImageList.length) {
+    deleteImageList.forEach(async (item) => {
+      const id = item.alt
+      await kuronekoRequest.delete({ url: '/upload/comment', params: { id } })
+    })
+  }
+  //获取编辑器json格式数据保存到数据库（将动态数据保存）
+  //验证数据有效性
+
+  const content = editorRef.value.children
+  const text = editorRef.value.getText()
+  if (!text.trim().length) {
+    return ElMessage('评论不能为空！')
+  }
+  if (!userStore.loginStatus) {
+    return ElMessage('请先登录！')
+  }
+  //创建评论,绑定动态
+  const { data } = await kuronekoRequest.post({
+    url: '/comment',
+    data: { content, momentId: props.momentId }
+  })
+  //获取评论id
+  const commentId = data.insertId
+  //将插入的图片与评论进行绑定
+  if (publishImageList.length) {
+    publishImageList.forEach(async (item) => {
+      const id = item.alt
+      await kuronekoRequest.patch({ url: '/upload/comment', data: { commentId }, params: { id } })
+    })
+  }
+  //重置
+  insertedImageList = []
+  //清空编辑器
+  editorRef.value.clear()
+  ElMessage({
+    showClose: true,
+    message: '发布评论成功！',
+    center: true,
+    type: 'success'
+  })
+  //更新评论
+  await commentStore.getCommentList(props.momentId)
+}
 </script>
 
 <template>
@@ -101,25 +173,29 @@ onBeforeUnmount(() => {
         :defaultConfig="editorConfig"
         :mode="mode"
         @onCreated="handleCreated"
+        @onMaxLength="handleMaxLength"
       />
     </div>
     <div class="relpy-footer">
       <Toolbar :editor="editorRef" :defaultConfig="toolbarConfig" :mode="mode" />
-      <button>评论</button>
+      <button @click="publishing">评论</button>
     </div>
   </div>
 </template>
 
 <style lang="less" scoped>
 .reply {
+  width: 100%;
   .reply-body {
     .reply-editor {
+      min-height: 100px;
       max-height: 300px;
       padding: 10px 10px 20px;
       border: 1px solid #ebebeb;
       border-radius: 4px;
       font-size: 14px;
       overflow-y: auto;
+      background-color: #fff;
     }
     .reply-editor:focus-within {
       border-color: #00c3ff;
