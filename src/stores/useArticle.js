@@ -17,6 +17,5 @@ export const useArticleStore = defineStore('article', {
       const { data } = await kuronekoRequest.get({ url: '/label' })
       this.labelList = data
     }
-  },
-  persist: true
+  }
 })

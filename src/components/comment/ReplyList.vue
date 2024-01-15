@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, reactive } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useCommentStore } from '@/stores/useComment'
 import { debounce } from 'lodash'
 import Reply from './Reply.vue'
@@ -28,16 +28,22 @@ const props = defineProps({
 })
 //获取评论数据
 const commentStore = useCommentStore()
-const replyTextList = reactive(commentStore.commentText)
+const replyTextList = computed(() => commentStore.commentText)
 let start = 0,
   end = 10
-let loadList = reactive(replyTextList.slice(start, end))
+const loadList = ref([])
+//更新loadList
+watch(replyTextList, (newValue) => {
+  loadList.value = [...newValue.slice(start, end)]
+})
 //下拉加载更多
 const loadMore = () => {
-  if (end < replyTextList.length) {
-    start += 10
+  if (end < replyTextList.value?.length) {
+    // start += 10
     end += 10
-    loadList.push(...replyTextList.slice(start, end))
+    //追加
+    const loadData = replyTextList.value.slice(start, end)
+    loadList.value = [...loadData]
   }
 }
 
@@ -67,7 +73,7 @@ const autherComment = computed(() => commentStore.getAutherCmt(props.autherId))
 //回复
 const handleReply = (id, index) => {
   //同时只显示一个回复控件
-  replyTextList.forEach((v, i) => {
+  replyTextList.value.forEach((v, i) => {
     v.isShowReply = i === index ? !v.isShowReply : false
   })
 }
@@ -81,7 +87,7 @@ const handleReply = (id, index) => {
         <span :class="{ active: replyListIndex == 2 }" @click="toggleReplyList(2)">只看楼主</span>
       </div>
     </div>
-    <p class="reply-list-empty" v-if="!replyTextList.length">暂时还没有评论哦~</p>
+    <p class="reply-list-empty" v-if="!replyTextList?.length">暂时还没有评论哦~</p>
     <template v-for="(item, index) in isShowAllCmt ? loadList : autherComment" :key="item.id">
       <div class="reply-list-body">
         <div class="reply-detail">
@@ -98,7 +104,9 @@ const handleReply = (id, index) => {
               <div class="reply-detail-account">用户名</div>
               <div class="reply-detail-operation-top">评论权限操作按钮</div>
             </div>
-            <div class="reply-detail-content">{{ item.content }}</div>
+            <div class="reply-detail-content">
+              <p v-for="c in item.content" :key="c">{{ c }}</p>
+            </div>
             <div class="reply-detail-bottom">
               <div class="reply-detail-operation-bottom">
                 <div class="reply-detail-time">{{ item.createTime }}</div>
@@ -116,7 +124,7 @@ const handleReply = (id, index) => {
             </div>
             <div
               class="reply-detail-replies"
-              v-if="item.isShowReply || item.commentReplyList.length"
+              v-if="item.isShowReply || item.commentReplyList?.length"
             >
               <reply v-if="item.isShowReply" :maxLength="500" />
               <template v-for="commentReply in item.commentReplyList" :key="commentReply.id">
@@ -149,7 +157,7 @@ const handleReply = (id, index) => {
         </div>
       </div>
     </template>
-    <p class="loading" v-if="loadList.length < replyTextList.length">加载中...</p>
+    <p class="loading" v-if="loadList?.length < replyTextList?.length">加载中...</p>
     <p class="reachBottom" v-else>已经到底了哦~</p>
   </div>
 </template>

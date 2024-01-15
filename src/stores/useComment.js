@@ -21,7 +21,7 @@ export const useCommentStore = defineStore('comment', {
                   if (i.text) return i.text
                 })
                 .join('')
-            })[0],
+            }),
             userId: item.userId,
             momentId: item.momentId,
             commentId: item.commentId,
