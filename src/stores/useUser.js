@@ -8,6 +8,7 @@ export const useUserStore = defineStore('user', {
       userProfile: {},
       loginStatus: false,
       isAvatarUrl: null,
+      //控制登录窗口显示隐藏
       isLogin: false
     }
   },

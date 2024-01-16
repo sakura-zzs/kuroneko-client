@@ -5,20 +5,14 @@ import { useUserStore } from '@/stores/useUser'
 import { localCache } from '@/utils/cache'
 
 const userStore = useUserStore()
-const { isAvatarUrl, loginStatus } = storeToRefs(userStore)
-defineProps({
-  isLogin: {
-    type: Boolean,
-    default: false
-  }
-})
-const emit = defineEmits(['changeIsLogin'])
+const { isAvatarUrl, loginStatus, isLogin } = storeToRefs(userStore)
+
 const login = () => {
   if (!loginStatus.value) {
-    emit('changeIsLogin', true)
+    //隐藏滚动条
+    document.body.style.overflow = 'hidden'
+    isLogin.value = true
   }
-  //隐藏滚动条
-  document.body.style.overflow = 'hidden'
 }
 
 const input1 = ref()
@@ -73,7 +67,7 @@ const logout = () => {
               <img v-else :src="isAvatarUrl" />
             </span>
             <template #dropdown>
-              <el-dropdown-menu v-show="isLogin" @mouseleave="hideUserMenu">
+              <el-dropdown-menu @mouseleave="hideUserMenu">
                 <el-dropdown-item>个人中心</el-dropdown-item>
                 <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>

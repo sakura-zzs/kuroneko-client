@@ -16,7 +16,7 @@ const hideLoginCard = (flag) => {
     <el-container class="app_container">
       <div class="nav_container">
         <el-header class="app_nav">
-          <navbar :isLogin="isLogin" @changeIsLogin="showLoginCard" />
+          <navbar @changeIsLogin="showLoginCard" />
         </el-header>
       </div>
       <el-main class="main-container">
