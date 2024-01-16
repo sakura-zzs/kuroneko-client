@@ -2,12 +2,10 @@
 import '@wangeditor/editor/dist/css/style.css' // 引入 css
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import { localCache } from '@/utils/cache'
-import { uploadRequest } from '@/service'
+import kuronekoRequest, { uploadRequest } from '@/service'
 import { ref, shallowRef, onBeforeUnmount } from 'vue'
-import { useUserStore } from '@/stores/useUser'
 import { useCommentStore } from '@/stores/useComment'
-import kuronekoRequest from '@/service'
-const userStore = useUserStore()
+import checkLogin from '@/utils/checkLogin'
 const commentStore = useCommentStore()
 const token = localCache.getItem('token')
 // 编辑器实例，必须用 shallowRef
@@ -114,6 +112,10 @@ const handleMaxLength = () => {
   ElMessage('字数已达上限！')
 }
 const publishing = async () => {
+  //校验用户登录状态
+  const loginStatus = await checkLogin()
+  if (!loginStatus) return
+
   //评论编辑完成，点击发布按钮获取编辑器中插入的所有图片
   publishImageList = editorRef.value.getElemsByType('image')
   //将要删除的图片筛选出来
@@ -132,9 +134,6 @@ const publishing = async () => {
   const text = editorRef.value.getText()
   if (!text.trim().length) {
     return ElMessage('评论不能为空！')
-  }
-  if (!userStore.loginStatus) {
-    return ElMessage('请先登录！')
   }
   //创建评论,绑定动态
   const { data } = await kuronekoRequest.post({
@@ -166,7 +165,7 @@ const publishing = async () => {
 </script>
 
 <template>
-  <div class="reply">
+  <div id="reply" class="reply">
     <div class="reply-body">
       <Editor
         class="reply-editor"

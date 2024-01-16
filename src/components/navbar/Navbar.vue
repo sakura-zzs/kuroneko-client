@@ -73,7 +73,7 @@ const logout = () => {
               <img v-else :src="isAvatarUrl" />
             </span>
             <template #dropdown>
-              <el-dropdown-menu @mouseleave="hideUserMenu">
+              <el-dropdown-menu v-show="isLogin" @mouseleave="hideUserMenu">
                 <el-dropdown-item>个人中心</el-dropdown-item>
                 <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>

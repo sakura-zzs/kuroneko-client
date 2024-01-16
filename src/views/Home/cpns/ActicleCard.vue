@@ -37,12 +37,42 @@ const { momentList } = storeToRefs(homeStore)
             </div>
           </div>
         </a>
+        <div class="article-card-footer">
+          <div class="tags">
+            <div class="tag" v-for="label in item.labelList" :key="label.id">
+              <a href="javascript:;">
+                <span>{{ label.name }}</span>
+              </a>
+            </div>
+          </div>
+          <div class="article-card-data">
+            <a :href="'/article/' + item.id + '#reply'">
+              <div class="acticle-card-data-item"><i-ep-chat-dot-round /><span>1</span></div>
+            </a>
+            <div class="acticle-card-data-item">
+              <svg viewBox="0 0 1024 1024" width="1.2em" height="1.2em">
+                <path
+                  d="M832 364.8h-147.2s19.2-64 32-179.2c6.4-57.6-38.4-115.2-102.4-121.6h-12.8c-51.2 0-83.2 32-102.4 76.8l-38.4 96c-32 64-57.6 102.4-76.8 115.2-25.6 12.8-121.6 12.8-128 12.8H128c-38.4 0-64 25.6-64 57.6v480c0 32 25.6 57.6 64 57.6h646.4c96 0 121.6-64 134.4-153.6l51.2-307.2c6.4-70.4-6.4-134.4-128-134.4z m-576 537.6H128V422.4h128v480z m640-409.6l-51.2 307.2c-12.8 57.6-12.8 102.4-76.8 102.4H320V422.4c44.8 0 70.4-6.4 89.6-19.2 32-12.8 64-64 108.8-147.2 25.6-64 38.4-96 44.8-102.4 6.4-19.2 19.2-32 44.8-32h6.4c32 0 44.8 32 44.8 51.2-12.8 102.4-32 166.4-32 166.4l-25.6 83.2h243.2c19.2 0 32 0 44.8 12.8 12.8 12.8 6.4 38.4 6.4 57.6z"
+                  p-id="4284"
+                  fill="#cccccc"
+                ></path>
+              </svg>
+              <span>1</span>
+            </div>
+          </div>
+        </div>
       </li>
     </ul>
   </div>
 </template>
 
 <style lang="less" scoped>
+@hover-color: #00c3ff;
+.multi-line-ellipsis() {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
 .acticle-list ul .acticle-card {
   padding: 20px;
   border-bottom: 1px solid #a2a2a2;
@@ -55,6 +85,9 @@ const { momentList } = storeToRefs(homeStore)
       .user-card {
         display: flex;
         align-items: center;
+        .user-nickname {
+          .multi-line-ellipsis();
+        }
         a {
           color: #666;
           margin-right: 10px;
@@ -67,6 +100,9 @@ const { momentList } = storeToRefs(homeStore)
         }
       }
     }
+    .acticle-card-time {
+      .multi-line-ellipsis();
+    }
     p {
       font-size: 12px;
       color: #ccc;
@@ -78,6 +114,7 @@ const { momentList } = storeToRefs(homeStore)
     flex-direction: column;
     cursor: pointer;
     .acticle-title {
+      .multi-line-ellipsis();
       height: 20px;
       margin-top: 8px;
       padding-right: 100px;
@@ -110,7 +147,58 @@ const { momentList } = storeToRefs(homeStore)
     }
   }
   .acticle-card-main:hover .acticle-title {
-    color: #00c3ff;
+    color: @hover-color;
+  }
+  .article-card-footer {
+    display: flex;
+    justify-content: space-between;
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      overflow: hidden;
+      height: 29px;
+      font-size: 12px;
+    }
+    .tags .tag {
+      height: 24px;
+      line-height: 24px;
+      border-radius: 12px;
+      margin-right: 10px;
+      background-color: #f5f5f5;
+      cursor: pointer;
+      a {
+        padding: 0 12px;
+        color: #666;
+      }
+      a:hover {
+        color: @hover-color;
+      }
+    }
+    .article-card-data {
+      display: flex;
+      align-items: center;
+      height: 24px;
+      margin-top: 5px;
+      color: #ccc;
+      font-size: 14px;
+      a {
+        color: #ccc;
+        & + .acticle-card-data-item {
+          margin-left: 10px;
+        }
+      }
+      .acticle-card-data-item {
+        display: flex;
+        align-items: center;
+        svg {
+          cursor: pointer;
+        }
+        span {
+          margin-left: 8px;
+          width: 50px;
+        }
+      }
+    }
   }
 }
 </style>

@@ -1,8 +1,9 @@
 <script setup>
 import Navbar from '@/components/navbar/Navbar.vue'
 import Login from '@/views/Login/Login.vue'
-import { ref } from 'vue'
-const isLogin = ref(false)
+import { useUserStore } from './stores/useUser'
+import { storeToRefs } from 'pinia'
+const { isLogin } = storeToRefs(useUserStore())
 const showLoginCard = (flag) => {
   isLogin.value = flag
 }

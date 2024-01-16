@@ -7,7 +7,8 @@ export const useUserStore = defineStore('user', {
     return {
       userProfile: {},
       loginStatus: false,
-      isAvatarUrl: null
+      isAvatarUrl: null,
+      isLogin: false
     }
   },
   getters: {},

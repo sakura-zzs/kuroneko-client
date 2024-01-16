@@ -8,7 +8,7 @@ import { uploadRequest } from '@/service'
 import kuronekoRequest from '@/service/index'
 import { useRouter } from 'vue-router'
 import { useArticleStore } from '@/stores/useArticle'
-import { useUserStore } from '@/stores/useUser'
+import checkLogin from '@/utils/checkLogin'
 const router = useRouter()
 const token = localCache.getItem('token')
 // 编辑器实例，必须用 shallowRef
@@ -28,7 +28,6 @@ const acticleTitle = ref()
 //获取标签列表
 let labelNameList = []
 const acticleStore = useArticleStore()
-const userStore = useUserStore()
 onMounted(async () => {
   await acticleStore.getLabelList()
   labelNameList = acticleStore.getLabelNameList
@@ -158,6 +157,8 @@ const handleMaxLength = () => {
 }
 
 const publishing = async () => {
+  const loginStatus = await checkLogin()
+  if (!loginStatus) return
   //编辑完成，点击发布按钮获取编辑器中插入的所有图片
   publishImageList = editorRef.value.getElemsByType('image')
   //将要删除的图片筛选出来
@@ -182,9 +183,6 @@ const publishing = async () => {
   }
   if (!selectTagRef.value?.length) {
     return ElMessage('请至少选择一个标签！')
-  }
-  if (!userStore.loginStatus) {
-    return ElMessage('请先登录！')
   }
   //创建动态
   const { data } = await kuronekoRequest.post({

@@ -2,9 +2,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ActicleCard from './cpns/ActicleCard.vue'
-import { useUserStore } from '@/stores/useUser'
+import checkLogin from '@/utils/checkLogin'
 const router = useRouter()
-const userStore = useUserStore()
 const bannerRef = ref([
   '/src/assets/image/kuroneko.png',
   '/src/assets/image/kuroneko.png',
@@ -13,8 +12,9 @@ const bannerRef = ref([
 //日历数据
 // const value = ref(new Date())
 
-const publish = () => {
-  if (!userStore.loginStatus) return ElMessage('请在登录后进行操作！')
+const publish = async () => {
+  const loginStatus = await checkLogin()
+  if (!loginStatus) return
   router.push({ path: '/publish' })
 }
 </script>
