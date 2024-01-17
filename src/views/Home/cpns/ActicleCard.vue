@@ -5,13 +5,13 @@ import { storeToRefs } from 'pinia'
 
 const homeStore = useHomeStore()
 homeStore.getMomentList()
-const { momentList } = storeToRefs(homeStore)
+const { momentList, isSearch, searchList } = storeToRefs(homeStore)
 </script>
 
 <template>
   <div class="acticle-list">
     <ul>
-      <li class="acticle-card" v-for="item in momentList" :key="item.id">
+      <li class="acticle-card" v-for="item in isSearch ? searchList : momentList" :key="item.id">
         <div class="acticle-card-header">
           <div class="acticle-card__userinfo">
             <div class="user-card">
@@ -47,7 +47,9 @@ const { momentList } = storeToRefs(homeStore)
           </div>
           <div class="article-card-data">
             <a :href="'/article/' + item.id + '#reply'">
-              <div class="acticle-card-data-item"><i-ep-chat-dot-round /><span>1</span></div>
+              <div class="acticle-card-data-item">
+                <i-ep-chat-dot-round /><span>{{ item.commentCount }}</span>
+              </div>
             </a>
             <div class="acticle-card-data-item">
               <svg viewBox="0 0 1024 1024" width="1.2em" height="1.2em">

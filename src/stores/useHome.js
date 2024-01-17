@@ -5,7 +5,10 @@ import kuronekoRequest from '@/service/index'
 export const useHomeStore = defineStore('home', {
   state: () => {
     return {
-      momentList: []
+      momentList: [],
+      isSearch: false,
+      searchList: [],
+      labelList: []
     }
   },
   getters: {
@@ -19,6 +22,10 @@ export const useHomeStore = defineStore('home', {
     async getMomentList() {
       const { data } = await kuronekoRequest.get({ url: '/moment' })
       this.momentList = data
+    },
+    async getLabelList() {
+      const { data } = await kuronekoRequest.get({ url: '/label' })
+      this.labelList = data
     }
   }
 })

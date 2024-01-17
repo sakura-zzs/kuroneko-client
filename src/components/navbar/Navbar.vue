@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/useUser'
 import { localCache } from '@/utils/cache'
+import { useHomeStore } from '@/stores/useHome'
 
 const userStore = useUserStore()
 const { isAvatarUrl, loginStatus, isLogin } = storeToRefs(userStore)
@@ -15,7 +16,26 @@ const login = () => {
   }
 }
 
+//查询
 const input1 = ref()
+const { momentList, isSearch, searchList } = storeToRefs(useHomeStore())
+const handleSearch = () => {
+  input1.value = input1.value?.trim()
+  isSearch.value = false
+  searchList.value = []
+  if (!isSearch.value && input1.value?.length) {
+    momentList.value.forEach((v) => {
+      if (JSON.stringify(v.labelList).indexOf(input1.value) !== -1) {
+        searchList.value.push(v)
+      }
+    })
+    if (searchList.value?.length) {
+      isSearch.value = true
+    }
+  }
+}
+
+//登录窗口
 const userMenuRef = ref()
 const showUserMenu = () => {
   //登录后才显示
@@ -55,9 +75,9 @@ const logout = () => {
         </el-menu>
       </div>
       <div class="header_right">
-        <el-input v-model="input1" class="w-50 m-2" size="large" placeholder="Search">
+        <el-input v-model="input1" class="w-50 m-2" size="large" placeholder="支持标签搜索">
           <template #suffix>
-            <i-ep-search />
+            <i-ep-search style="cursor: pointer" @click="handleSearch" />
           </template>
         </el-input>
         <div class="avatar" @click="login" @mouseenter="showUserMenu">

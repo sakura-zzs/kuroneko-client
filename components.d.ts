@@ -9,10 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     Editor: typeof import('./src/components/editor/Editor.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
-    ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElButton: typeof import('element-plus/es')['ElButton']
-    ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
-    ElCalendar: typeof import('element-plus/es')['ElCalendar']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCarousel: typeof import('element-plus/es')['ElCarousel']
     ElCarouselItem: typeof import('element-plus/es')['ElCarouselItem']
@@ -30,14 +27,10 @@ declare module 'vue' {
     ElMenuItem: typeof import('element-plus/es')['ElMenuItem']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElSelect: typeof import('element-plus/es')['ElSelect']
-    ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
     IEpArrowRight: typeof import('~icons/ep/arrow-right')['default']
     IEpChatDotRound: typeof import('~icons/ep/chat-dot-round')['default']
-    IEpClose: typeof import('~icons/ep/close')['default']
     IEpCloseBold: typeof import('~icons/ep/close-bold')['default']
     IEpEditPen: typeof import('~icons/ep/edit-pen')['default']
-    IEpPoint: typeof import('~icons/ep/point')['default']
-    IEpPointer: typeof import('~icons/ep/pointer')['default']
     IEpSearch: typeof import('~icons/ep/search')['default']
     IEpStar: typeof import('~icons/ep/star')['default']
     IEpView: typeof import('~icons/ep/view')['default']
@@ -46,5 +39,8 @@ declare module 'vue' {
     ReplyList: typeof import('./src/components/comment/ReplyList.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+  }
+  export interface ComponentCustomProperties {
+    vInfiniteScroll: typeof import('element-plus/es')['ElInfiniteScroll']
   }
 }
