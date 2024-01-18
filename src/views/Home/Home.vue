@@ -6,6 +6,7 @@ import checkLogin from '@/utils/checkLogin'
 import bannerImg from '@/assets/image/kuroneko.png'
 import { useHomeStore } from '@/stores/useHome'
 import { storeToRefs } from 'pinia'
+import getAssetsUrl from '@/utils/getAssetsUrl'
 const router = useRouter()
 const homeStore = useHomeStore()
 const { labelList } = storeToRefs(homeStore)
@@ -20,6 +21,10 @@ const publish = async () => {
   const loginStatus = await checkLogin()
   if (!loginStatus) return
   router.push({ path: '/publish' })
+}
+//点击标签查找
+const searching = (tagName) => {
+  homeStore.handleSearch(tagName)
 }
 </script>
 
@@ -55,11 +60,19 @@ const publish = async () => {
         <div class="label-list">
           <div class="aside-section">
             <div class="aside-section-header"><h2>标签列表</h2></div>
-            <ul class="aside-section-list">
-              <li v-for="item in labelList" :key="item.id" class="aside-section-list-item">
-                {{ item.name }}
-              </li>
-            </ul>
+            <div class="aside-section-content">
+              <ul class="aside-section-list">
+                <li
+                  v-for="item in labelList"
+                  :key="item.id"
+                  @click="searching(item.name)"
+                  class="aside-section-list-item"
+                >
+                  <img :src="getAssetsUrl(item.icon)" alt="" />
+                  {{ item.name }}
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </el-aside>
@@ -85,6 +98,11 @@ const publish = async () => {
     font-size: 16px;
   }
 }
+.aside-section-content {
+  width: 100%;
+  padding: 20px;
+  overflow: hidden;
+}
 .label-list {
   width: 100%;
   padding-top: 40px;
@@ -92,11 +110,14 @@ const publish = async () => {
 .aside-section-list {
   width: 100%;
   height: 300px;
-  padding: 20px;
   margin: 0;
   list-style: none;
   overflow-y: auto;
   overflow-x: hidden;
+  font-size: 14px;
+}
+.aside-section-list::-webkit-scrollbar {
+  display: none;
 }
 .aside-section-list .aside-section-list-item {
   display: flex;
@@ -105,6 +126,13 @@ const publish = async () => {
   height: 50px;
   margin: 10px;
   cursor: pointer;
+  img {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    border: 1px solid #ebebeb;
+    margin-right: 10px;
+  }
 }
 
 .main-content {

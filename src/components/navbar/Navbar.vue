@@ -18,21 +18,9 @@ const login = () => {
 
 //查询
 const input1 = ref()
-const { momentList, isSearch, searchList } = storeToRefs(useHomeStore())
-const handleSearch = () => {
-  input1.value = input1.value?.trim()
-  isSearch.value = false
-  searchList.value = []
-  if (!isSearch.value && input1.value?.length) {
-    momentList.value.forEach((v) => {
-      if (JSON.stringify(v.labelList).indexOf(input1.value) !== -1) {
-        searchList.value.push(v)
-      }
-    })
-    if (searchList.value?.length) {
-      isSearch.value = true
-    }
-  }
+const homeStore = useHomeStore()
+const Searching = () => {
+  homeStore.handleSearch(input1.value)
 }
 
 //登录窗口
@@ -77,7 +65,7 @@ const logout = () => {
       <div class="header_right">
         <el-input v-model="input1" class="w-50 m-2" size="large" placeholder="支持标签搜索">
           <template #suffix>
-            <i-ep-search style="cursor: pointer" @click="handleSearch" />
+            <i-ep-search style="cursor: pointer" @click="Searching" />
           </template>
         </el-input>
         <div class="avatar" @click="login" @mouseenter="showUserMenu">
