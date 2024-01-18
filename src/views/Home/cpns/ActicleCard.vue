@@ -6,6 +6,9 @@ import { storeToRefs } from 'pinia'
 const homeStore = useHomeStore()
 homeStore.getMomentList()
 const { momentList, isSearch, searchList } = storeToRefs(homeStore)
+const searching = (tagName) => {
+  homeStore.handleSearch(tagName)
+}
 </script>
 
 <template>
@@ -40,7 +43,7 @@ const { momentList, isSearch, searchList } = storeToRefs(homeStore)
         <div class="article-card-footer">
           <div class="tags">
             <div class="tag" v-for="label in item.labelList" :key="label.id">
-              <a href="javascript:;">
+              <a href="javascript:;" @click="searching(label.name)">
                 <span>{{ label.name }}</span>
               </a>
             </div>
