@@ -27,6 +27,8 @@ export const useCommentStore = defineStore('comment', {
             commentId: item.commentId,
             createTime: item.createTime,
             isShowReply: false,
+            userInfo: item.userInfo,
+            isShowDelete: false,
             //二级评论文本提取
             commentReplyList: item?.commentReplyList?.map((cr) => {
               return {
@@ -42,7 +44,10 @@ export const useCommentStore = defineStore('comment', {
                 momentId: cr.momentId,
                 commentId: cr.commentId,
                 createTime: cr.createTime,
-                isShowReply: false
+                isShowReply: false,
+                replyAtUser: cr.replyToUser,
+                userInfo: cr.userInfo,
+                isShowDelete: false
               }
             })
           }
@@ -61,10 +66,10 @@ export const useCommentStore = defineStore('comment', {
         url: `/comment/topComments/${momentId}`
       })
       this.commentList = data
-      this.commentText = this.getCommentText()
+      await this.getCommentReplyList()
     },
     async getCommentReplyList() {
-      //获取所有评论回复，并混入到评论数据中
+      //获取所有评论回复和评论所在评论的用户信息，并混入到评论数据中
       const promises = this.commentList.map((i) =>
         kuronekoRequest.get({
           url: `/comment/${i.id}`

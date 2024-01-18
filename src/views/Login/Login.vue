@@ -60,8 +60,8 @@ const submitForm = async (formEl) => {
     document.body.style.overflow = ''
     userStore.loginStatus = true
     userStore.getUserProfile().then(() => {
-      const profile = toRaw(userStore.userProfile)
-      userStore.isAvatarUrl = profile.avatar.url
+      const profile = userStore.userProfile
+      userStore.isAvatarUrl = profile?.avatar?.url
     })
   }
 }

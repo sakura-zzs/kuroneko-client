@@ -35,6 +35,14 @@ const props = defineProps({
   maxLength: {
     type: Number,
     default: 1000
+  },
+  customStyle: {
+    type: Object,
+    default: () => {}
+  },
+  replyAtCommentId: {
+    type: Number,
+    default: 0
   }
 })
 //编辑器配置
@@ -135,11 +143,23 @@ const publishing = async () => {
   if (!text.trim().length) {
     return ElMessage('评论不能为空！')
   }
-  //创建评论,绑定动态
-  const { data } = await kuronekoRequest.post({
-    url: '/comment',
-    data: { content, momentId: props.momentId }
-  })
+
+  let data = null
+  //如果为评论的评论(二级评论)，绑定评论id
+  if (props.replyAtCommentId !== 0) {
+    const res = await kuronekoRequest.post({
+      url: `/comment/${props.replyAtCommentId}/reply`,
+      data: { content, momentId: props.momentId }
+    })
+    data = res.data
+  } else {
+    //创建一级评论,绑定动态
+    const res = await kuronekoRequest.post({
+      url: '/comment',
+      data: { content, momentId: props.momentId }
+    })
+    data = res.data
+  }
   //获取评论id
   const commentId = data.insertId
   //将插入的图片与评论进行绑定
@@ -168,6 +188,7 @@ const publishing = async () => {
   <div id="reply" class="reply">
     <div class="reply-body">
       <Editor
+        :style="customStyle"
         class="reply-editor"
         :defaultConfig="editorConfig"
         :mode="mode"

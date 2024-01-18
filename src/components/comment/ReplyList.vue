@@ -1,8 +1,12 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useCommentStore } from '@/stores/useComment'
+import { useUserStore } from '@/stores/useUser'
+import { storeToRefs } from 'pinia'
 import { debounce } from 'lodash'
 import Reply from './Reply.vue'
+import kuronekoRequest from '@/service'
+const { userProfile, loginStatus } = storeToRefs(useUserStore())
 const replyListIndex = ref(1)
 const isShowAllCmt = ref(true)
 const toggleReplyList = (index) => {
@@ -71,11 +75,89 @@ onMounted(async () => {
 const autherComment = computed(() => commentStore.getAutherCmt(props.autherId))
 
 //回复
-const handleReply = (id, index) => {
-  //同时只显示一个回复控件
-  replyTextList.value.forEach((v, i) => {
-    v.isShowReply = i === index ? !v.isShowReply : false
-  })
+const handleReply = (id, lv1Replyindex, lv2ReplyIndex, replyLv) => {
+  if (!replyLv) {
+    //同时只显示一个回复控件,回复一级评论
+    replyTextList.value.forEach((v, i) => {
+      //关闭二级评论的回复窗口
+      v.commentReplyList.forEach((item) => {
+        item.isShowReply = false
+      })
+
+      v.isShowReply = i === lv1Replyindex ? !v.isShowReply : false
+    })
+  } else {
+    //回复二级评论
+    replyTextList.value.forEach((v) => {
+      //关闭一级评论的回复窗口
+      v.isShowReply = false
+      v.commentReplyList.forEach((item, index) => {
+        item.isShowReply = index === lv2ReplyIndex ? !item.isShowReply : false
+      })
+    })
+  }
+}
+const style = ref({ width: '100%', maxHeight: '192px', minHeight: '64px' })
+
+const showDeleteBtn = (status, lv1Replyindex, lv2ReplyIndex, replyLv) => {
+  //status 如果当前登录了且登录用户为动态作者或者为评论用户
+  if (!status) return
+  if (!replyLv) {
+    //同时只显示一个删除按钮,一级评论删除按钮
+    replyTextList.value.forEach((v, i) => {
+      if (i === lv1Replyindex) {
+        v.isShowDelete = true
+        return
+      }
+    })
+  } else {
+    //二级评论删除按钮
+    replyTextList.value.forEach((v) => {
+      v.commentReplyList.forEach((item, index) => {
+        if (index === lv2ReplyIndex) {
+          item.isShowDelete = true
+          return
+        }
+      })
+    })
+  }
+}
+const hideDeleteBtn = (status, lv1Replyindex, lv2ReplyIndex, replyLv) => {
+  if (!status) return
+  if (!replyLv) {
+    //同时只显示一个删除按钮,一级评论删除按钮
+    replyTextList.value.forEach((v, i) => {
+      if (i === lv1Replyindex) {
+        v.isShowDelete = false
+        return
+      }
+    })
+  } else {
+    //二级评论删除按钮
+    replyTextList.value.forEach((v) => {
+      v.commentReplyList.forEach((item, index) => {
+        if (index === lv2ReplyIndex) {
+          item.isShowDelete = false
+          return
+        }
+      })
+    })
+  }
+}
+const handleDeleteClick = async (status, commentId) => {
+  if (status) {
+    const { data } = await kuronekoRequest.delete({ url: `/comment/${commentId}` })
+    if (data.affectedRows) {
+      ElMessage({
+        showClose: true,
+        message: '删除成功！',
+        center: true,
+        type: 'success'
+      })
+      //获取最新数据
+      await commentStore.getCommentList(props.momentId)
+    }
+  }
 }
 </script>
 
@@ -95,14 +177,47 @@ const handleReply = (id, index) => {
             <!-- 跳转至用户空间 -->
             <a href="javascript:;">
               <div class="user-avatar">
-                <img src="../../assets/image/user_default.png" alt="" />
+                <img v-if="item?.userInfo?.avatar" :src="item?.userInfo?.avatar" />
+                <img v-else src="@/assets/image/user_default.png" />
               </div>
             </a>
           </div>
           <div class="reply-detail-container">
             <div class="reply-detail-header">
-              <div class="reply-detail-account">用户名</div>
-              <div class="reply-detail-operation-top">评论权限操作按钮</div>
+              <div class="reply-detail-account">{{ item.userInfo.nickName }}</div>
+              <div
+                class="reply-detail-operation-top"
+                @mouseenter="
+                  showDeleteBtn(
+                    (loginStatus && props.autherId === userProfile.userId) ||
+                      item.userId === userProfile.userId,
+                    index,
+                    null,
+                    false
+                  )
+                "
+                @mouseleave="
+                  hideDeleteBtn(
+                    (loginStatus && props.autherId === userProfile.userId) ||
+                      item.userId === userProfile.userId,
+                    index,
+                    null,
+                    false
+                  )
+                "
+              >
+                <span
+                  @click="
+                    handleDeleteClick(
+                      (loginStatus && props.autherId === userProfile.userId) ||
+                        item.userId === userProfile.userId,
+                      item.id
+                    )
+                  "
+                  v-show="item.isShowDelete"
+                  >删除</span
+                >
+              </div>
             </div>
             <div class="reply-detail-content">
               <p v-for="c in item.content" :key="c">{{ c }}</p>
@@ -111,7 +226,10 @@ const handleReply = (id, index) => {
               <div class="reply-detail-operation-bottom">
                 <div class="reply-detail-time">{{ item.createTime }}</div>
                 <div class="reply-detail-operation-bottom-right">
-                  <div @click="handleReply(item.id, index)" class="reply-detail-bottom-reply-btn">
+                  <div
+                    @click="handleReply(item.id, index, null, false)"
+                    class="reply-detail-bottom-reply-btn"
+                  >
                     回复
                   </div>
                   <div class="heart-click">
@@ -126,23 +244,80 @@ const handleReply = (id, index) => {
               class="reply-detail-replies"
               v-if="item.isShowReply || item.commentReplyList?.length"
             >
-              <reply v-if="item.isShowReply" :maxLength="500" />
-              <template v-for="commentReply in item.commentReplyList" :key="commentReply.id">
+              <reply
+                :momentId="item.momentId"
+                :replyAtCommentId="item.id"
+                v-if="item.isShowReply"
+                :maxLength="500"
+              />
+              <template
+                v-for="(commentReply, lv2ReplyIndex) in item.commentReplyList"
+                :key="commentReply.id"
+              >
                 <div class="reply-detail-comment-reply">
                   <div class="reply-detail-comment-reply-header">
                     <div class="reply-detail-comment-reply-account">
                       <a href="javascript:;">
-                        <img src="../../assets/image/user_default.png" alt="" />
-                        <span>用户名</span>
+                        <img
+                          v-if="commentReply?.userInfo?.avatar"
+                          :src="commentReply?.userInfo?.avatar"
+                        />
+                        <img v-else src="@/assets/image/user_default.png" />
+                        <span>{{ commentReply.userInfo.nickName }}</span>
+                        <div
+                          v-if="
+                            commentReply.replyAtUser.nickName && commentReply.commentId !== item.id
+                          "
+                        >
+                          <span class="reply-detail-comment-reply-account-at">回复</span>
+                          <span>{{ commentReply.replyAtUser.nickName }}</span>
+                        </div>
                       </a>
                     </div>
-                    <div class="reply-detail-comment-reply-operation-top">评论权限操作按钮</div>
+                    <div
+                      @mouseenter="
+                        showDeleteBtn(
+                          (loginStatus && props.autherId === userProfile.userId) ||
+                            commentReply.userId === userProfile.userId,
+                          null,
+                          lv2ReplyIndex,
+                          true
+                        )
+                      "
+                      @mouseleave="
+                        hideDeleteBtn(
+                          (loginStatus && props.autherId === userProfile.userId) ||
+                            commentReply.userId === userProfile.userId,
+                          null,
+                          lv2ReplyIndex,
+                          true
+                        )
+                      "
+                      class="reply-detail-comment-reply-operation-top"
+                    >
+                      <span
+                        @click="
+                          handleDeleteClick(
+                            (loginStatus && props.autherId === userProfile.userId) ||
+                              commentReply.userId === userProfile.userId,
+                            commentReply.id
+                          )
+                        "
+                        v-show="commentReply.isShowDelete"
+                        >删除</span
+                      >
+                    </div>
                   </div>
                   <div class="reply-detail-comment-reply-content">{{ commentReply.content }}</div>
                   <div class="reply-detail-comment-reply-bottom">
                     <div class="reply-detail-comment-reply-time">{{ commentReply.createTime }}</div>
                     <div class="reply-detail-comment-reply-operation-bottom-right">
-                      <div class="reply-detail-comment-reply-bottom-reply-btn">回复</div>
+                      <div
+                        class="reply-detail-comment-reply-bottom-reply-btn"
+                        @click="handleReply(commentReply.id, index, lv2ReplyIndex, true)"
+                      >
+                        回复
+                      </div>
                       <div class="heart-click">
                         点赞
                         <span>0</span>
@@ -151,6 +326,13 @@ const handleReply = (id, index) => {
                     </div>
                   </div>
                 </div>
+                <reply
+                  :momentId="item.momentId"
+                  :replyAtCommentId="commentReply.id"
+                  :customStyle="style"
+                  v-if="commentReply.isShowReply"
+                  :maxLength="500"
+                />
               </template>
             </div>
           </div>
@@ -216,15 +398,12 @@ const handleReply = (id, index) => {
     font-size: 14px;
     color: #666;
     .reply-detail-left .user-avatar {
-      width: 44px;
-      height: 44px;
       margin-right: 10px;
     }
     .reply-detail-left .user-avatar img {
-      width: 100%;
-      height: 100%;
+      width: 44px;
       border-radius: 50%;
-      border: 1px solid #ebebeb;
+      // border: 1px solid #ebebeb;
       vertical-align: top;
     }
     .reply-detail-container {
@@ -235,8 +414,19 @@ const handleReply = (id, index) => {
       .reply-detail-header {
         display: flex;
         padding-top: 2px;
+        margin-bottom: 10px;
         .reply-detail-account {
           flex-grow: 1;
+        }
+        .reply-detail-operation-top {
+          width: 40px;
+          height: 20px;
+          cursor: pointer;
+          span {
+            padding: 5px;
+            border-radius: 10px;
+            background-color: #ccc;
+          }
         }
       }
       .reply-detail-content {
@@ -268,13 +458,21 @@ const handleReply = (id, index) => {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          .reply-detail-comment-reply-operation-top {
+            width: 40px;
+            height: 20px;
+            cursor: pointer;
+          }
+          .reply-detail-comment-reply-account-at {
+            margin: 0 6px;
+            color: #ccc;
+          }
           .reply-detail-comment-reply-account a {
             display: flex;
             align-items: center;
             color: #00b2ff;
             img {
               width: 24px;
-              height: 24px;
               margin: 0 8px 0 0;
             }
           }
