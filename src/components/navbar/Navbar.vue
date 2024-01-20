@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/useUser'
 import { localCache } from '@/utils/cache'
 import { useHomeStore } from '@/stores/useHome'
+import { useRouter } from 'vue-router'
 
 const userStore = useUserStore()
 const { isAvatarUrl, loginStatus, isLogin } = storeToRefs(userStore)
@@ -38,6 +39,10 @@ const logout = () => {
   localCache.clear()
   userStore.$reset()
   ElMessage('退出登录！')
+}
+const router = useRouter()
+const GoToUserPage = () => {
+  router.push(`/user/${userStore.userProfile.userId}`)
 }
 </script>
 
@@ -76,7 +81,7 @@ const logout = () => {
             </span>
             <template #dropdown>
               <el-dropdown-menu @mouseleave="hideUserMenu">
-                <el-dropdown-item>个人中心</el-dropdown-item>
+                <el-dropdown-item @click="GoToUserPage">个人中心</el-dropdown-item>
                 <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>

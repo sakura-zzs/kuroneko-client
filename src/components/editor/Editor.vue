@@ -1,7 +1,7 @@
 <script setup>
 import '@wangeditor/editor/dist/css/style.css' // 引入 css
 
-import { onBeforeUnmount, ref, shallowRef, onMounted, inject } from 'vue'
+import { onBeforeUnmount, ref, shallowRef, onMounted } from 'vue'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import { localCache } from '@/utils/cache'
 import { uploadRequest } from '@/service'
@@ -228,8 +228,6 @@ const remoteMethod = (query) => {
     options.value = []
   }
 }
-//注入样式
-inject('style')
 </script>
 
 <template>

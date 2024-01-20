@@ -26,6 +26,7 @@ const hideLoginCard = (flag) => {
     <div class="login-container" v-if="isLogin">
       <login @hideLoginCard="hideLoginCard" />
     </div>
+    <el-backtop :right="100" :bottom="100" />
   </div>
 </template>
 
