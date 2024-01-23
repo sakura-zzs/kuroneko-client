@@ -2,6 +2,7 @@
 import { useHomeStore } from '@/stores/useHome'
 import getContentText from '@/utils/getContentText'
 import { storeToRefs } from 'pinia'
+import { defineProps } from 'vue'
 
 const homeStore = useHomeStore()
 homeStore.getMomentList()
@@ -9,12 +10,26 @@ const { momentList, isSearch, searchList } = storeToRefs(homeStore)
 const searching = (tagName) => {
   homeStore.handleSearch(tagName)
 }
+const props = defineProps({
+  userMomentList: {
+    type: Array,
+    default: () => []
+  }
+})
 </script>
 
 <template>
   <div class="acticle-list">
     <ul>
-      <li class="acticle-card" v-for="item in isSearch ? searchList : momentList" :key="item.id">
+      <li
+        class="acticle-card"
+        v-for="item in props.userMomentList.length
+          ? props.userMomentList
+          : isSearch
+          ? searchList
+          : momentList"
+        :key="item.id"
+      >
         <div class="acticle-card-header">
           <div class="acticle-card__userinfo">
             <div class="user-card">

@@ -9,7 +9,8 @@ export const useUserStore = defineStore('user', {
       loginStatus: false,
       isAvatarUrl: null,
       //控制登录窗口显示隐藏
-      isLogin: false
+      isLogin: false,
+      userCommentList: []
     }
   },
   getters: {},
@@ -18,6 +19,12 @@ export const useUserStore = defineStore('user', {
       const id = localCache.getItem('id')
       const { data } = await kuronekoRequest.get({ url: `/user/profile?id=${id}` })
       this.userProfile = data[0]
+      this.isAvatarUrl = this.userProfile.avatar.url
+    },
+    async getUserCommentList() {
+      const id = localCache.getItem('id')
+      const { data } = await kuronekoRequest.get({ url: `comment/user/${id}` })
+      this.userCommentList = data
     }
   },
   //持久化

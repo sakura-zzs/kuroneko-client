@@ -59,10 +59,7 @@ const submitForm = async (formEl) => {
     })
     document.body.style.overflow = ''
     userStore.loginStatus = true
-    userStore.getUserProfile().then(() => {
-      const profile = userStore.userProfile
-      userStore.isAvatarUrl = profile?.avatar?.url
-    })
+    await userStore.getUserProfile()
   }
 }
 
