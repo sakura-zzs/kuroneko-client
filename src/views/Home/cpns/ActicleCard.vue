@@ -3,17 +3,24 @@ import { useHomeStore } from '@/stores/useHome'
 import getContentText from '@/utils/getContentText'
 import { storeToRefs } from 'pinia'
 import { defineProps } from 'vue'
+import Label from '@/components/label/Label.vue'
 
 const homeStore = useHomeStore()
 homeStore.getMomentList()
 const { momentList, isSearch, searchList } = storeToRefs(homeStore)
 const searching = (tagName) => {
+  //禁止个人中心动态标签触发主页动态查询
+  if (!props.isLabelClick) return
   homeStore.handleSearch(tagName)
 }
 const props = defineProps({
   userMomentList: {
     type: Array,
     default: () => []
+  },
+  isLabelClick: {
+    type: Boolean,
+    default: true
   }
 })
 </script>
@@ -56,13 +63,7 @@ const props = defineProps({
           </div>
         </a>
         <div class="article-card-footer">
-          <div class="tags">
-            <div class="tag" v-for="label in item.labelList" :key="label.id">
-              <a href="javascript:;" @click="searching(label.name)">
-                <span>{{ label.name }}</span>
-              </a>
-            </div>
-          </div>
+          <Label @searching="searching" :labelList="item.labelList" />
           <div class="article-card-data">
             <a :href="'/article/' + item.id + '#reply'">
               <div class="acticle-card-data-item">
@@ -172,28 +173,6 @@ const props = defineProps({
   .article-card-footer {
     display: flex;
     justify-content: space-between;
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      overflow: hidden;
-      height: 29px;
-      font-size: 12px;
-    }
-    .tags .tag {
-      height: 24px;
-      line-height: 24px;
-      border-radius: 12px;
-      margin-right: 10px;
-      background-color: #f5f5f5;
-      cursor: pointer;
-      a {
-        padding: 0 12px;
-        color: #666;
-      }
-      a:hover {
-        color: @hover-color;
-      }
-    }
     .article-card-data {
       display: flex;
       align-items: center;

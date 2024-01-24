@@ -1,18 +1,29 @@
 <template>
   <div>
-    <el-container class="main-container" :style="headerTitle">
+    <el-container class="main-container">
       <div class="main-content">
         <el-header class="main-content-header">
           <div class="account-center-avatar">
-            <img v-if="!isAvatarUrl" src="../../assets/image/user_default.png" alt="" />
-            <img v-else :src="isAvatarUrl" alt="" />
+            <img
+              v-if="!otherUserProfile?.avatar?.url"
+              src="../../assets/image/user_default.png"
+              alt=""
+            />
+            <img v-else :src="otherUserProfile?.avatar?.url" alt="" />
           </div>
           <div class="account-center-user-info">
             <div class="account-center-user-info-header">
-              <span>{{ userProfile.profile.nickName }}</span>
-              <el-button plain @click="goToEditProfile">编辑</el-button>
+              <span>{{ otherUserProfile?.profile?.nickName }}</span>
+              <el-button
+                v-if="userProfile.userId === otherUserProfile.userId"
+                plain
+                @click="goToEditProfile"
+                >编辑</el-button
+              >
             </div>
-            <div class="account-center-user-info-intro">{{ userProfile.profile.selfProfile }}</div>
+            <div class="account-center-user-info-intro">
+              {{ otherUserProfile?.profile?.selfProfile }}
+            </div>
             <div class="account-center-user-info-data"><span>333</span><span>获赞数</span></div>
           </div>
         </el-header>
@@ -21,24 +32,34 @@
             <el-tab-pane label="我的发帖" name="0">
               <template #label>
                 <div class="accountCenter-item">
-                  <el-icon><i-ep-tickets /></el-icon><span>我的发帖</span>
+                  <el-icon><i-ep-tickets /></el-icon
+                  ><span>{{
+                    userProfile.userId === otherUserProfile.userId ? '我的发帖' : '发帖'
+                  }}</span>
                 </div>
               </template>
               <div class="main-content-container">
-                <div class="main-content-container-header">我的发帖</div>
+                <div class="main-content-container-header">
+                  {{ userProfile.userId === otherUserProfile.userId ? '我的发帖' : '发帖' }}
+                </div>
                 <el-card>
-                  <ActicleCard :userMomentList="userMomentList" />
+                  <ActicleCard :isLabelClick="false" :userMomentList="userMomentList" />
                 </el-card>
               </div>
             </el-tab-pane>
             <el-tab-pane label="我的评论" name="1"
               ><template #label>
                 <div class="accountCenter-item">
-                  <el-icon><i-ep-comment /></el-icon><span>我的评论</span>
+                  <el-icon><i-ep-comment /></el-icon
+                  ><span>{{
+                    userProfile.userId === otherUserProfile.userId ? '我的评论' : '评论'
+                  }}</span>
                 </div>
               </template>
               <div class="main-content-container">
-                <div class="main-content-container-header">我的评论</div>
+                <div class="main-content-container-header">
+                  {{ userProfile.userId === otherUserProfile.userId ? '我的评论' : '评论' }}
+                </div>
                 <el-card>
                   <div class="main-content-container-list">
                     <div
@@ -71,7 +92,10 @@
                 </el-card>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="编辑资料" name="2"
+            <el-tab-pane
+              v-if="userProfile.userId === otherUserProfile.userId"
+              label="编辑资料"
+              name="2"
               ><template #label>
                 <div class="accountCenter-item">
                   <el-icon><i-ep-user-filled /></el-icon><span>编辑资料</span>
@@ -81,7 +105,12 @@
                 <div class="main-content-container-header">编辑资料</div>
                 <div class="account-info-edit-content">
                   <div class="account-info-edit-avatar">
-                    <img class="current-img" v-if="isAvatarUrl" :src="isAvatarUrl" alt="" />
+                    <img
+                      class="current-img"
+                      v-if="otherUserProfile?.avatar?.url"
+                      :src="otherUserProfile?.avatar?.url"
+                      alt=""
+                    />
                     <el-upload
                       limit="1"
                       action="#"
@@ -188,7 +217,7 @@
                 </div>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="退出登录"
+            <el-tab-pane v-if="userProfile.userId === otherUserProfile.userId" label="退出登录"
               ><template #label>
                 <div class="accountCenter-item" @click="logout">
                   <el-icon><i-ep-switch-button /></el-icon><span>退出登录</span>
@@ -208,7 +237,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useHomeStore } from '@/stores/useHome'
 import { useUserStore } from '@/stores/useUser'
 import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import kuronekoRequest from '@/service'
 //使用element-plus集成的dayjs处理日期选择器的格式
 import { dayjs } from 'element-plus'
@@ -244,12 +273,15 @@ const handleDownload = (file) => {
 
 const homeStore = useHomeStore()
 const userStore = useUserStore()
-const { userCommentList, userProfile, isAvatarUrl } = storeToRefs(userStore)
+const { userCommentList, userProfile, otherUserProfile } = storeToRefs(userStore)
 const userMomentList = computed(() =>
-  homeStore.momentList.filter((v) => v.userId === userStore.userProfile.userId)
+  homeStore.momentList.filter((v) => v.userId === userStore.otherUserProfile.userId)
 )
+const route = useRoute()
 onMounted(async () => {
-  await userStore.getUserCommentList()
+  const { id } = route.params
+  await userStore.getOtherUserProfile(id)
+  await userStore.getUserCommentList(id)
 })
 const router = useRouter()
 const goToMoment = (momentId) => {
@@ -268,16 +300,16 @@ const uploadAvatar = (file) => {
 const isUpload = ref(false)
 const profileFormRef = ref()
 const profileForm = reactive({
-  nickName: userProfile.value?.profile?.nickName,
+  nickName: otherUserProfile.value?.profile?.nickName,
   sex:
-    userProfile.value?.profile?.sex == '男'
+    otherUserProfile.value?.profile?.sex == '男'
       ? 'male'
-      : userProfile.value?.profile?.sex == '女'
+      : otherUserProfile.value?.profile?.sex == '女'
       ? 'female'
       : 'unKnow',
-  selfProfile: userProfile.value?.profile?.selfProfile,
-  birth: userProfile.value?.profile?.birth,
-  location: userProfile.value?.profile?.location
+  selfProfile: otherUserProfile.value?.profile?.selfProfile,
+  birth: otherUserProfile.value?.profile?.birth,
+  location: otherUserProfile.value?.profile?.location
 })
 const profileRules = reactive({
   nickName: [{ required: true, message: 'Please input Activity name', trigger: 'blur' }]
@@ -306,11 +338,11 @@ const handleSubmit = async () => {
   const birth = dayjs(profileForm.birth).format('YYYY-MM-DD')
 
   if (
-    profileForm.nickName.trim() == userProfile.value.profile.nickName &&
-    sex == userProfile.value.profile.sex &&
-    profileForm.selfProfile.trim() == userProfile.value.profile.selfProfile &&
-    birth == userProfile.value.profile.birth &&
-    profileForm.location.trim() == userProfile.value.profile.location
+    profileForm.nickName.trim() == otherUserProfile.value.profile.nickName &&
+    sex == otherUserProfile.value.profile.sex &&
+    profileForm.selfProfile.trim() == otherUserProfile.value.profile.selfProfile &&
+    birth == otherUserProfile.value.profile.birth &&
+    profileForm.location.trim() == otherUserProfile.value.profile.location
   )
     return
   await kuronekoRequest.patch({

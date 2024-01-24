@@ -50,6 +50,7 @@ declare module 'vue' {
     IEpUserFilled: typeof import('~icons/ep/user-filled')['default']
     IEpView: typeof import('~icons/ep/view')['default']
     IEpZoomIn: typeof import('~icons/ep/zoom-in')['default']
+    Label: typeof import('./src/components/label/Label.vue')['default']
     Navbar: typeof import('./src/components/navbar/Navbar.vue')['default']
     Reply: typeof import('./src/components/comment/Reply.vue')['default']
     ReplyList: typeof import('./src/components/comment/ReplyList.vue')['default']
