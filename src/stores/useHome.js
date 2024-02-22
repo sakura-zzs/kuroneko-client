@@ -1,6 +1,7 @@
 // import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import kuronekoRequest from '@/service/index'
+import { createEditor } from '@wangeditor/editor'
 
 export const useHomeStore = defineStore('home', {
   state: () => {
@@ -21,7 +22,11 @@ export const useHomeStore = defineStore('home', {
   actions: {
     async getMomentList() {
       const { data } = await kuronekoRequest.get({ url: '/moment' })
-      this.momentList = data
+      for (const e of data) {
+        if (!e.html) await this.saveMomentHtmlData(e)
+      }
+      const { data: momentData } = await kuronekoRequest.get({ url: '/moment' })
+      this.momentList = momentData
     },
     async getLabelList() {
       const { data } = await kuronekoRequest.get({ url: '/label' })
@@ -41,6 +46,14 @@ export const useHomeStore = defineStore('home', {
           this.isSearch = true
         }
       }
+    },
+    async saveMomentHtmlData(momentData) {
+      const editor = createEditor({ content: JSON.parse(momentData.content) })
+      const htmlData = editor.getHtml()
+      await kuronekoRequest.patch({
+        url: `/moment/${momentData.id}/html`,
+        data: { html: htmlData }
+      })
     }
   }
 })

@@ -175,6 +175,7 @@ const publishing = async () => {
 
   const content = editorRef.value.children
   const text = editorRef.value.getText()
+  const html = editorRef.value.getHtml()
   if (!acticleTitle.value?.trim().length) {
     return ElMessage('请填写标题！')
   }
@@ -187,7 +188,7 @@ const publishing = async () => {
   //创建动态
   const { data } = await kuronekoRequest.post({
     url: '/moment',
-    data: { title: acticleTitle.value, content }
+    data: { title: acticleTitle.value, content, html }
   })
   //获取动态id
   const momentId = data.insertId
