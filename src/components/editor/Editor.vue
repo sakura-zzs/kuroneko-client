@@ -173,7 +173,8 @@ const publishing = async () => {
   //获取编辑器json格式数据保存到数据库（将动态数据保存）
   //验证数据有效性
 
-  const content = editorRef.value.children
+  //不再保存json格式
+  // const content = editorRef.value.children
   const text = editorRef.value.getText()
   const html = editorRef.value.getHtml()
   if (!acticleTitle.value?.trim().length) {
@@ -188,7 +189,7 @@ const publishing = async () => {
   //创建动态
   const { data } = await kuronekoRequest.post({
     url: '/moment',
-    data: { title: acticleTitle.value, content, html }
+    data: { title: acticleTitle.value, html }
   })
   //获取动态id
   const momentId = data.insertId

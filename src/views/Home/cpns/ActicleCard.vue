@@ -1,9 +1,9 @@
 <script setup>
 import { useHomeStore } from '@/stores/useHome'
-import getContentText from '@/utils/getContentText'
 import { storeToRefs } from 'pinia'
 import { defineProps } from 'vue'
 import Label from '@/components/label/Label.vue'
+import { createEditor } from '@wangeditor/editor'
 
 const homeStore = useHomeStore()
 homeStore.getMomentList()
@@ -23,6 +23,10 @@ const props = defineProps({
     default: true
   }
 })
+const getEditorText = (html) => {
+  const editor = createEditor({ html })
+  return editor.getText()
+}
 </script>
 
 <template>
@@ -58,7 +62,7 @@ const props = defineProps({
               <img :src="item.momentImg[0].url" />
             </div>
             <div class="acticle-content">
-              {{ getContentText(item.content) }}
+              {{ getEditorText(item.html) }}
             </div>
           </div>
         </a>

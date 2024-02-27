@@ -20,7 +20,7 @@ onMounted(async () => {
   await homeStore.getMomentList()
   momentData.value = homeStore.getMomentById(id)
   userId.value = momentData.value.userId
-  const editor = createEditor({ content: JSON.parse(momentData.value.content) })
+  const editor = createEditor({ html: momentData.value.html })
   editorRef.value.innerHTML = editor.getHtml()
 })
 </script>

@@ -22,6 +22,8 @@ export const useHomeStore = defineStore('home', {
   actions: {
     async getMomentList() {
       const { data } = await kuronekoRequest.get({ url: '/moment' })
+      //适配小程序，editor内容由保存json格式转为保存html格式
+      //将之前保存的json格式转为html格式保存
       for (const e of data) {
         if (!e.html) await this.saveMomentHtmlData(e)
       }
